@@ -27,39 +27,62 @@ const TESTS = [
 ];
 
 // Health packages: edit names, test lists and prices here.
+// price = offer price, mrp = original price (optional, shown crossed out).
 const PACKAGES = [
   {
-    name: "Basic Health Checkup",
-    tests: ["CBC", "Blood Sugar Fasting", "Lipid Profile", "Urine Routine"],
-    price: null,
+    name: "Essential Health Checkup",
+    price: 1000,
+    tests: [
+      "Complete Blood Count (CBC)", "ESR", "eGFR", "Liver Function Test with GGT",
+      "Kidney Function Test", "Lipid Profile", "Blood Sugar Fasting",
+      "Thyroid Profile (T3, T4, TSH)", "Urine Routine",
+    ],
   },
   {
-    name: "Full Body Checkup",
+    name: "Health Checkup Plus",
+    price: 1200,
+    tests: [
+      "Complete Blood Count with ESR", "Liver Function Test with GGT", "Kidney Function Test",
+      "eGFR", "Lipid Profile", "HbA1c (with graph)", "Blood Sugar Fasting",
+      "Thyroid Profile (T3, T4, TSH)", "Urine Routine",
+    ],
+  },
+  {
+    name: "Super 5 Full Body Checkup",
     featured: true,
-    tests: ["CBC", "Thyroid Profile", "Lipid Profile", "LFT", "KFT", "HbA1c", "Vitamin D", "Vitamin B12", "Urine Routine"],
-    price: null,
+    price: 2400,
+    mrp: 7170,
+    tests: [
+      "CBC", "ESR", "Blood Sugar Fasting", "Liver Function Test", "Kidney Function Test",
+      "Lipid Profile", "Thyroid Profile", "HbA1c", "Calcium", "Iron Profile",
+      "Vitamin B12", "Vitamin D3", "CRP", "RA Factor", "Urine Analysis",
+    ],
   },
   {
-    name: "Diabetes Care",
-    tests: ["Blood Sugar Fasting & PP", "HbA1c", "KFT", "Lipid Profile", "Urine Routine"],
-    price: null,
+    name: "Advanced Health Checkup",
+    price: 2600,
+    tests: [
+      "Complete Blood Count with ESR", "Liver Function Test with GGT", "Kidney Function Test",
+      "eGFR", "Lipid Profile", "Iron Profile", "Vitamin D", "Vitamin B12",
+      "HbA1c (with graph)", "Blood Sugar Fasting", "Thyroid Profile (T3, T4, TSH)", "Urine Routine",
+    ],
   },
   {
-    name: "Women's Health",
-    tests: ["CBC", "Thyroid Profile", "Iron Studies", "Vitamin D", "Vitamin B12", "Calcium"],
-    price: null,
-  },
-  {
-    name: "Senior Citizen Checkup",
-    tests: ["CBC", "Blood Sugar", "HbA1c", "Lipid Profile", "LFT", "KFT", "Thyroid Profile", "Vitamin D", "Uric Acid"],
-    price: null,
-  },
-  {
-    name: "Fever Panel",
-    tests: ["CBC", "Dengue NS1", "Malaria Antigen", "Typhoid (Widal)", "CRP", "Urine Routine"],
-    price: null,
+    name: "Comprehensive Health Checkup",
+    price: 3600,
+    mrp: 6000,
+    tests: [
+      "Complete Blood Count (CBC)", "ESR", "Peripheral Smear", "Glucose Fasting", "HbA1c",
+      "Liver Function Test (Extended)", "Kidney Function Test", "Lipid Profile", "Thyroid Profile",
+      "Iron, Serum", "TIBC", "Transferrin Saturation", "Vitamin D3 (25-Hydroxy)", "Vitamin B12",
+      "Arthritis Profile", "Total IgE", "CA-125", "VDRL", "Hepatitis B (HBsAg)",
+      "Hepatitis C Antibody (HCV)", "Urine Routine",
+    ],
   },
 ];
+
+// Packages show this many tests first, the rest behind a "show all" button
+const PACKAGE_PREVIEW = 9;
 
 // ============================================================
 // Helpers
@@ -115,17 +138,41 @@ function renderTests(filter = "") {
 // Render packages
 // ============================================================
 function renderPackages() {
-  $("#packageGrid").innerHTML = PACKAGES.map(
-    (p) => `
+  $("#packageGrid").innerHTML = PACKAGES.map((p) => {
+    // Only shorten long lists (more than 12 tests)
+    const extra = p.tests.length > 12 ? p.tests.length - PACKAGE_PREVIEW : 0;
+    const items = p.tests
+      .map((t, i) => `<li${extra > 0 && i >= PACKAGE_PREVIEW ? " hidden" : ""}>${escapeHtml(t)}</li>`)
+      .join("");
+    const off = p.mrp ? Math.round((1 - p.price / p.mrp) * 100) : 0;
+
+    return `
     <article class="package${p.featured ? " featured" : ""}">
-      ${p.featured ? '<span class="tag">Most popular</span>' : ""}
+      ${p.featured ? '<span class="tag">Best value</span>' : ""}
       <h3>${escapeHtml(p.name)}</h3>
       <p class="count">${p.tests.length} tests included</p>
-      <ul>${p.tests.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>
-      <div class="price">${priceLabel(p.price)}</div>
+      <ul>${items}</ul>
+      ${extra > 0 ? `<button type="button" class="more-btn" aria-expanded="false">+ ${extra} more tests</button>` : ""}
+      <div class="price-row">
+        <span class="price">${priceLabel(p.price)}</span>
+        ${p.mrp ? `<s class="mrp">${priceLabel(p.mrp)}</s><span class="off">${off}% off</span>` : ""}
+      </div>
       <a href="#book" class="btn ${p.featured ? "btn-primary" : "btn-outline"} btn-block" data-test="${escapeHtml(p.name)}">Book Now</a>
-    </article>`
-  ).join("");
+    </article>`;
+  }).join("");
+
+  // "+ N more tests" toggles the hidden part of the list
+  document.querySelectorAll(".more-btn").forEach((btn) => {
+    const label = btn.textContent;
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") !== "true";
+      btn.parentElement.querySelectorAll("li").forEach((li, i) => {
+        if (i >= PACKAGE_PREVIEW) li.hidden = !open;
+      });
+      btn.setAttribute("aria-expanded", String(open));
+      btn.textContent = open ? "Show less" : label;
+    });
+  });
 }
 
 // Suggestions in the booking form's "Test / Package" field

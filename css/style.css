@@ -196,7 +196,16 @@ h3 { font-size: 1.1rem; margin-bottom: .4rem; }
 .package ul { list-style: none; margin-bottom: 1.2rem; flex: 1; }
 .package li { padding: .3rem 0 .3rem 1.4rem; position: relative; font-size: .93rem; }
 .package li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
-.package .price { font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 1rem; }
+.package li[hidden] { display: none; }
+.more-btn {
+  align-self: flex-start; background: none; border: 0; padding: 0; margin: -.6rem 0 1.2rem;
+  font: inherit; font-size: .9rem; font-weight: 700; color: var(--green); cursor: pointer;
+}
+.more-btn:hover { text-decoration: underline; }
+.price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.package .price { font-size: 1.6rem; font-weight: 800; color: var(--ink); }
+.package .mrp { color: var(--muted); font-size: 1rem; }
+.package .off { background: #fdecea; color: #c0392b; font-weight: 700; font-size: .8rem; padding: .15rem .5rem; border-radius: 6px; }
 
 /* Steps */
 .steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
